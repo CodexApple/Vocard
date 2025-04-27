@@ -28,6 +28,7 @@
 # Then you can upload files to host using tools such as WinSCP or
 # using `nano` to create and edit the files directly using hosts terminal.
 # NOTE that some terminals DO NOT let you paste, so you can either use WinSCP or SSH app like Putty.
+# NOTE rename the settings example.json from the ./config folder "mv 'settings Example.json' settings.json"
 
 # example - `root@docker:/opt/vocard/config# nano application.yml`
 # example - `root@docker:/opt/vocard/config# nano settings.json`
@@ -53,7 +54,7 @@ services:
             # there is no point in changing the password here, since the container is available only in docker network
             - LAVALINK_SERVER_PASSWORD=youshallnotpass # Change password if needed (don't forget to change it in healthcheck below and settings.json)
         volumes:
-            - ./lavalink/application.yml:/opt/Lavalink/application.yml
+            - ./config/application.yml:/opt/Lavalink/application.yml
         networks:
             - vocard
         expose:
@@ -65,21 +66,21 @@ services:
             retries: 5
 
     vocard-db:
-       container_name: vocard-db
-       image: mongo:8
-       restart: unless-stopped
-       volumes:
-           - ./data/mongo/db:/data/db
-           - ./data/mongo/conf:/data/configdb
-       environment:
-           - MONGO_INITDB_ROOT_USERNAME=admin # For your MongoDB URL use "mongodb://admin:admin@vocard-db:27017"
-           - MONGO_INITDB_ROOT_PASSWORD=admin
-       expose:
-           - "27017"
-       networks:
-           - vocard
-       command: ["mongod", "--oplogSize=1024", "--wiredTigerCacheSizeGB=1", "--auth", "--noscripting"]
-       healthcheck:
+        container_name: vocard-db
+        image: mongo:8
+        restart: unless-stopped
+        volumes:
+            - ./data/mongo/db:/data/db
+            - ./data/mongo/conf:/data/configdb
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=admin # For your MongoDB URL use "mongodb://admin:admin@vocard-db:27017"
+            - MONGO_INITDB_ROOT_PASSWORD=admin
+        expose:
+            - "27017"
+        networks:
+            - vocard
+        command: ["mongod", "--oplogSize=1024", "--wiredTigerCacheSizeGB=1", "--auth", "--noscripting"]
+        healthcheck:
             test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
             interval: 10s
             timeout: 5s
@@ -111,7 +112,7 @@ services:
         # build:
         #     dockerfile: ./Dockerfile
         volumes:
-            - ./settings.json:/app/settings.json
+            - ./config/settings.json:/app/settings.json
         networks:
             - vocard
         depends_on:
